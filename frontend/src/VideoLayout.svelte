@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { FilePicker } from "../../wailsjs/go/main/App";
+  import { FilePicker } from "../wailsjs/go/main/App";
   import {
     XIcon,
     PlusCircleIcon,
@@ -7,16 +7,16 @@
     ScissorsIcon,
     ArrowSmDownIcon,
   } from "@rgossiaux/svelte-heroicons/solid";
-  import { videoFiles } from "../stores";
-  import { ReadProjectWorkspace } from "../../wailsjs/go/main/App";
-  import { router, selectedTrack } from "../stores";
+  import { ReadProjectWorkspace } from "../wailsjs/go/main/App";
+  import { router, selectedTrack, videoFiles } from "./stores";
   import { onDestroy } from "svelte";
-  import Modal from "./Modal.svelte";
-  import VideoPlayer from "./VideoPlayer.svelte";
-  import Timeline from "./Timeline.svelte";
-  import { draggable } from "../lib/dnd";
-  import type { main } from "../../wailsjs/go/models";
-  import { WindowSetTitle } from "../../wailsjs/runtime/runtime";
+  import Modal from "./components/Modal.svelte";
+  import VideoPlayer from "./components/VideoPlayer.svelte";
+  import Timeline from "./components/Timeline.svelte";
+  import { draggable } from "./lib/dnd";
+  import type { main } from "../wailsjs/go/models";
+  import { WindowSetTitle } from "../wailsjs/runtime/runtime";
+  import ToolingLayout from "./ToolingLayout.svelte";
 
   let fileUploadError = "";
 
@@ -98,12 +98,6 @@
         >
           <PlusCircleIcon class="h-5 w-5 text-white" />
         </button>
-        <button
-          class="bg-gdark hover:bg-green2 px-2 py-1 rounded-md flex items-center gap-1 border-2 border-white transition ease-in-out duration-500"
-          on:click={(e) => console.log(e)}
-        >
-          <ScissorsIcon class="h-5 w-5 text-white" />
-        </button>
 
         {#if fileUploadError}
           <div>
@@ -139,6 +133,7 @@
       <VideoPlayer />
     </div>
   </div>
+  <ToolingLayout />
   <!-- Timeline -->
   <Timeline />
 </div>
