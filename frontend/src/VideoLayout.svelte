@@ -1,23 +1,28 @@
 <script lang="ts">
-  import { FilePicker } from "../../wailsjs/go/main/App";
+  import {
+    FilePicker,
+    ReadProjectWorkspace,
+    LoadTimeline,
+    SaveTimeline,
+  } from "../wailsjs/go/main/App";
   import {
     XIcon,
     PlusCircleIcon,
     FilmIcon,
-    ScissorsIcon,
     ArrowSmDownIcon,
   } from "@rgossiaux/svelte-heroicons/solid";
-  import { videoFiles } from "../stores";
-  import { ReadProjectWorkspace } from "../../wailsjs/go/main/App";
-  import { router, selectedTrack } from "../stores";
-  import { onDestroy } from "svelte";
-  import Modal from "./Modal.svelte";
-  import VideoPlayer from "./VideoPlayer.svelte";
-  import Timeline from "./Timeline.svelte";
-  import { draggable } from "../lib/dnd";
-  import type { main } from "../../wailsjs/go/models";
-  import { WindowSetTitle } from "../../wailsjs/runtime/runtime";
+  import { router, videoStore, videoFiles, trackStore } from "./stores";
+  import { onDestroy, onMount } from "svelte";
+  import Modal from "./components/Modal.svelte";
+  import VideoPlayer from "./components/VideoPlayer.svelte";
+  import Timeline from "./components/Timeline.svelte";
+  import { draggable } from "./lib/dnd";
+  import { WindowSetTitle } from "../wailsjs/runtime/runtime";
+  import ToolingLayout from "./ToolingLayout.svelte";
+  import FloppyDisk from "./icons/FloppyDisk.svelte";
 
+  const { setVideoSrc } = videoStore;
+  const { addVideoToTrack } = trackStore;
   let fileUploadError = "";
 
   function loadProjectFiles() {
@@ -25,7 +30,28 @@
       .then((files) => videoFiles.addVideos(files))
       .catch(() => (fileUploadError = "No files in this project"));
   }
-  loadProjectFiles();
+
+  function loadTimeline() {
+    LoadTimeline()
+      .then((timeline) => {
+        timeline.video_nodes.forEach((videoNode) => {
+          addVideoToTrack(0, videoNode);
+        });
+        setVideoSrc(timeline.video_nodes[0].rid);
+      })
+      .catch(console.log);
+  }
+
+  function saveTimeline() {
+    SaveTimeline()
+      .then(() => console.log("timeline was saved"))
+      .catch(() => console.log("could not save timeline"));
+  }
+
+  onMount(() => {
+    loadProjectFiles();
+    loadTimeline();
+  });
 
   function selectFile() {
     FilePicker()
@@ -36,13 +62,9 @@
       .catch(() => (fileUploadError = "No files selected"));
   }
 
-  function viewVideo(video: main.Video) {
-    selectedTrack.set(`${video.filepath}/${video.name}${video.extension}`);
-  }
-
   onDestroy(() => {
     videoFiles.reset();
-    selectedTrack.set("");
+    videoStore.source.set("");
   });
 </script>
 
@@ -87,6 +109,13 @@
         </Modal>
         <button
           class="bg-gdark hover:bg-gprimary rounded-lg px-4 py-2 border-2 border-white"
+          on:click={() => saveTimeline()}
+        >
+          <FloppyDisk />
+        </button>
+
+        <button
+          class="bg-gdark hover:bg-gprimary rounded-lg px-4 py-2 border-2 border-white"
         >
           <ArrowSmDownIcon class="h-6 w-6 text-white" />
         </button>
@@ -97,12 +126,6 @@
           on:click={() => selectFile()}
         >
           <PlusCircleIcon class="h-5 w-5 text-white" />
-        </button>
-        <button
-          class="bg-gdark hover:bg-green2 px-2 py-1 rounded-md flex items-center gap-1 border-2 border-white transition ease-in-out duration-500"
-          on:click={(e) => console.log(e)}
-        >
-          <ScissorsIcon class="h-5 w-5 text-white" />
         </button>
 
         {#if fileUploadError}
@@ -119,7 +142,6 @@
               class="flex items-center bg-gprimary hover:bg-stone-700 rounded-lg p-2 cursor-grab transition ease-in-out duration-500 gap-2"
               on:click={() => {
                 fileUploadError = "";
-                viewVideo(video);
               }}
             >
               <button
@@ -139,6 +161,7 @@
       <VideoPlayer />
     </div>
   </div>
+  <ToolingLayout />
   <!-- Timeline -->
   <Timeline />
 </div>

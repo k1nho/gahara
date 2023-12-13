@@ -10,6 +10,7 @@ import (
 	"strings"
 
 	"github.com/k1nho/gahara/internal/utils"
+	"github.com/k1nho/gahara/internal/video"
 	wruntime "github.com/wailsapp/wails/v2/pkg/runtime"
 )
 
@@ -27,14 +28,17 @@ type Config struct {
 
 // App struct
 type App struct {
+	// ctx: app context
 	ctx context.Context
 	// config: gahara configuration
 	config Config
+	// Timeline: the project timeline
+	Timeline video.Timeline `json:"timeline"`
 }
 
 // NewApp creates a new App application struct
 func NewApp() *App {
-	return &App{}
+	return &App{Timeline: video.NewTimeline()}
 }
 
 // startup is called when the app starts. The context is saved
