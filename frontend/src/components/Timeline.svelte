@@ -1,13 +1,13 @@
 <script lang="ts">
   import TimelineArrow from "../icons/TimelineArrow.svelte";
   import { dropzone } from "../lib/dnd";
-  import { trackStore, selectedTrack } from "../stores";
+  import { trackStore, selectedTrack, currenTime } from "../stores";
   import { onDestroy } from "svelte";
   import type { main } from "wailsjs/go/models";
   import { GenerateThumbnail } from "../../wailsjs/go/main/App";
   import { videoStore, toolingStore } from "../stores";
 
-  const { getDuration, currentTime } = videoStore;
+  const { getDuration, currentTime, duration } = videoStore;
   const { cutStart, cutEnd, resetTooling, editMode } = toolingStore;
 
   let hoverPos = 0;
@@ -113,7 +113,7 @@
     },
   ) {
     e.preventDefault();
-    e.stopPropagation(); // Stop the event from bubbling up
+    e.stopPropagation();
     const { clientX } = e;
     const { left, width } = cutRangeBox.getBoundingClientRect();
 
@@ -152,6 +152,9 @@
           );
           cutRangeBox.style.width = `${newWidthLeft}px`;
           cutRangeBox.style.left = `${newLeftPos}px`;
+          const start = (newLeftPos / trackNode.clientWidth) * getDuration();
+          currentTime.set(start);
+          cutStart.set(start);
           break;
         case "right":
           const newWidthRight = Math.min(
@@ -159,6 +162,10 @@
             getTrackWidth() - curLeft,
           );
           cutRangeBox.style.width = `${newWidthRight}px`;
+          const endCut =
+            ((curLeft + newWidthRight) / getTrackWidth()) * getDuration();
+          currentTime.set(endCut);
+          cutEnd.set(endCut);
           break;
         case "middle":
           const cutRangeBoxPos = curLeft + (e.movementX || 0);
@@ -167,6 +174,9 @@
             Math.min(cutRangeBoxPos, getTrackWidth() - curWidth),
           );
           cutRangeBox.style.left = `${pos}px`;
+          const startTime = (pos / trackNode.clientWidth) * getDuration();
+          currentTime.set(startTime);
+          cutStart.set(startTime);
           break;
         default:
       }
@@ -206,7 +216,7 @@
   <!-- TODO Create an actual id for a track -->
   {#each $trackStore as track, id (id)}
     <div class="w-fit h-28 flex items-center relative" id={`track-${id}`}>
-      {#if $editMode === "cut"}
+      {#if $editMode === "cut" && selectedID === id}
         <div
           class="absolute border-yellow-500 border-4 rounded-md h-full w-full cursor-grab"
           bind:this={cutRangeBox}
