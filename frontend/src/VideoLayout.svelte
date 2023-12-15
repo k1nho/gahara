@@ -4,7 +4,6 @@
     XIcon,
     PlusCircleIcon,
     FilmIcon,
-    ScissorsIcon,
     ArrowSmDownIcon,
   } from "@rgossiaux/svelte-heroicons/solid";
   import { ReadProjectWorkspace } from "../wailsjs/go/main/App";

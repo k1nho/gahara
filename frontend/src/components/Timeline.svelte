@@ -1,11 +1,15 @@
 <script lang="ts">
   import TimelineArrow from "../icons/TimelineArrow.svelte";
   import { dropzone } from "../lib/dnd";
-  import { trackStore, selectedTrack, currenTime } from "../stores";
   import { onDestroy } from "svelte";
   import type { main } from "wailsjs/go/models";
   import { GenerateThumbnail } from "../../wailsjs/go/main/App";
-  import { videoStore, toolingStore } from "../stores";
+  import {
+    videoStore,
+    toolingStore,
+    trackStore,
+    selectedTrack,
+  } from "../stores";
 
   const { getDuration, currentTime, duration } = videoStore;
   const { cutStart, cutEnd, resetTooling, editMode } = toolingStore;
@@ -23,6 +27,19 @@
     if (trackNode !== undefined && trackNode !== null) {
       hoverPos = ($currentTime / getDuration()) * trackNode.clientWidth;
     }
+  }
+
+  function formatSecondsToHMS(seconds: number): string {
+    const hours = Math.floor(seconds / 3600);
+    const minutes = Math.floor((seconds % 3600) / 60);
+    const remainingSeconds = Math.floor(seconds % 60);
+
+    const formattedHours = hours < 10 ? `0${hours}` : `${hours}`;
+    const formattedMinutes = minutes < 10 ? `0${minutes}` : `${minutes}`;
+    const formattedSeconds =
+      remainingSeconds < 10 ? `0${remainingSeconds}` : `${remainingSeconds}`;
+
+    return `${formattedHours}:${formattedMinutes}:${formattedSeconds}`;
   }
 
   function viewVideo(video: main.Video) {
@@ -203,13 +220,18 @@
         Drag And Drop Video Clips
       </p>
     </div>
-  {:else if $editMode === "timeline"}
-    <div
-      class="absolute top-0 left-0 h-full w-3 z-10"
-      style={`left: ${hoverPos}px`}
-    >
-      <TimelineArrow />
+  {:else}
+    <div class="flex justify-center">
+      {formatSecondsToHMS($currentTime)} : {formatSecondsToHMS($duration)}
     </div>
+    {#if $editMode === "timeline"}
+      <div
+        class="absolute top-0 left-0 h-full w-3 z-10"
+        style={`left: ${hoverPos}px`}
+      >
+        <TimelineArrow />
+      </div>
+    {/if}
   {/if}
 
   <!-- VIDEO TRACKS -->

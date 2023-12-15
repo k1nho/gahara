@@ -202,4 +202,3 @@ export const selectedTrack = writable("");
 export const draggedVideo = createVideoTransferStore();
 export const videoStore = createVideoStore();
 export const toolingStore = createVideoToolingStore();
-export const currenTime = writable(0.0);
