@@ -10,23 +10,31 @@ import (
 
 	"github.com/google/uuid"
 
+	"github.com/k1nho/gahara/internal/constants"
 	"github.com/k1nho/gahara/internal/utils"
 	"github.com/k1nho/gahara/internal/video"
 	wruntime "github.com/wailsapp/wails/v2/pkg/runtime"
 )
 
 type Interval struct {
+	// Start: the start time of the interval
 	Start time.Duration `json:"start"`
-	End   time.Duration `json:"end"`
+	// End: the end time of the interval
+	End time.Duration `json:"end"`
 }
 
 type Video struct {
-	// Name: the name of the video file (includes extension)
+	// Name: the name of the video file
 	Name string `json:"name"`
-	// Extension: the container type of the video (mp4, avi, etc)
+	// Extension: the extension of the video (mov, mp4, etc)
 	Extension string `json:"extension"`
 	// FilePath: the absolute path of the video
 	FilePath string `json:"filepath"`
+}
+
+type Event struct {
+	IsProcessed bool  `json:"is_processed"`
+	VideoData   Video `json:"videodata"`
 }
 
 // createProxyFile: creates the proxy file to be used for editing (preserve original media)
@@ -41,8 +49,10 @@ func (a *App) createProxyFile(inputFile, fileName string) {
 		err := cmd.Run()
 		if err != nil {
 			wruntime.LogError(a.ctx, fmt.Sprintf("could not create the proxy file for %s: %s", inputFile, err.Error()))
+			wruntime.EventsEmit(a.ctx, constants.PROXY_FILE_CREATED, Event{IsProcessed: false, VideoData: Video{}})
 			return
 		}
+		wruntime.EventsEmit(a.ctx, constants.PROXY_FILE_CREATED, Event{IsProcessed: true, VideoData: Video{Name: fileName, Extension: ".mov", FilePath: a.config.ProjectDir}})
 
 		// Once the proxy file is created, generate a thumbnail
 		err = a.GenerateThumbnail(pathProxyFile)

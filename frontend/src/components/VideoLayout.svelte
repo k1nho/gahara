@@ -1,5 +1,6 @@
 <script lang="ts">
   import { FilePicker } from "../../wailsjs/go/main/App";
+  import { EventsOff, EventsOn } from "../../wailsjs/runtime/runtime";
   import {
     XIcon,
     PlusCircleIcon,
@@ -19,6 +20,17 @@
   import { WindowSetTitle } from "../../wailsjs/runtime/runtime";
 
   let fileUploadError = "";
+  let isUploading = false;
+
+  EventsOn("PROXY_FILE_CREATED", (data) => {
+    console.log(data);
+    if (data.is_processed) {
+      videoFiles.addVideos([data.videodata]);
+      isUploading = false;
+    } else {
+      fileUploadError = "Could not process file";
+    }
+  });
 
   function loadProjectFiles() {
     ReadProjectWorkspace()
@@ -29,9 +41,9 @@
 
   function selectFile() {
     FilePicker()
-      .then((video) => {
+      .then(() => {
+        isUploading = true;
         fileUploadError = "";
-        videoFiles.addVideos([video]);
       })
       .catch(() => (fileUploadError = "No files selected"));
   }
@@ -43,6 +55,7 @@
   onDestroy(() => {
     videoFiles.reset();
     selectedTrack.set("");
+    EventsOff("PROXY_FILE_CREATED");
   });
 </script>
 

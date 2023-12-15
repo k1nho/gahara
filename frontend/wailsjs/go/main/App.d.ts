@@ -4,7 +4,7 @@ import {main} from '../models';
 
 export function CreateProjectWorkspace(arg1:string):Promise<string>;
 
-export function FilePicker():Promise<main.Video>;
+export function FilePicker():Promise<void>;
 
 export function GenerateThumbnail(arg1:string):Promise<void>;
 
