@@ -167,7 +167,7 @@ function createVideoStore() {
 }
 
 function createVideoToolingStore() {
-  const editMode = writable<string>("timeline");
+  const editMode = writable<string>("select");
   const isCutting = writable<boolean>(false);
   const cutStart = writable<number>(0.0);
   const cutEnd = writable<number>(0.0);

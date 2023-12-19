@@ -221,7 +221,7 @@
       </p>
     </div>
   {:else}
-    <div class="flex justify-center">
+    <div class="flex justify-center select-none">
       {formatSecondsToHMS($currentTime)} : {formatSecondsToHMS($duration)}
     </div>
     {#if $editMode === "timeline"}

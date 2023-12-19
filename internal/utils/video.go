@@ -30,13 +30,17 @@ func IsValidExtension(extension string) bool {
 	return false
 }
 
-func FormatTime(t time.Duration) string {
-	duration := time.Duration(t) * time.Second
-	// Extract hours, minutes, and seconds
-	hours := int(duration.Hours())
-	minutes := int(duration.Minutes()) - hours*60
-	seconds := int(duration.Seconds()) - hours*3600 - minutes*60
+func FormatTime(seconds float64) string {
+	duration := time.Duration(int64(seconds * float64(time.Second)))
 
-	// Format the duration as "hr:min:sec"
-	return fmt.Sprintf("%02d:%02d:%02d", hours, minutes, seconds)
+	// Extract the whole seconds and remaining nanoseconds
+	wholeSeconds := int(duration.Seconds())
+	nanoseconds := duration.Nanoseconds() % int64(time.Second)
+
+	// Format the time components as "HH:MM:SS"
+	formattedTime := fmt.Sprintf("%02d:%02d:%02d", wholeSeconds/3600, (wholeSeconds%3600)/60, wholeSeconds%60)
+
+	// Add milliseconds (rounded to six decimal places)
+	formattedTime += fmt.Sprintf(".%06d", nanoseconds/1000)
+	return formattedTime
 }

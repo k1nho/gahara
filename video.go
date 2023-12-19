@@ -6,7 +6,6 @@ import (
 	"path"
 	"path/filepath"
 	"strings"
-	"time"
 
 	"github.com/google/uuid"
 
@@ -16,8 +15,8 @@ import (
 )
 
 type Interval struct {
-	Start time.Duration `json:"start"`
-	End   time.Duration `json:"end"`
+	Start float64 `json:"start"`
+	End   float64 `json:"end"`
 }
 
 type Video struct {
@@ -61,13 +60,25 @@ func (a *App) createProxyFile(inputFile, fileName string) {
 
 // TrimVideoInterval: given an input file, and an interval (start,end), it returns the video with interval (start,end) removed
 func (a *App) TrimVideoInterval(inputFile string, interval Interval) error {
-	cmd := video.CutVideoInterval(inputFile, interval.Start, interval.End)
-	err := cmd.Run()
+	startCut := utils.FormatTime(interval.Start)
+	endCut := utils.FormatTime(interval.End)
+
+	name, _, err := utils.GetNameAndExtension(path.Base(inputFile))
 	if err != nil {
-		errMsg := fmt.Sprintf("could not trim the video interval from %d to %d: %s", interval.Start, interval.End, err.Error())
+		return err
+	}
+	id := strings.Replace(uuid.New().String(), "-", "", -1)
+	outputFile := path.Join(a.config.ProjectDir, fmt.Sprintf("%s_%s.mov", name, id))
+
+	cmd := video.CutVideoInterval(inputFile, outputFile, startCut, endCut)
+	err = cmd.Run()
+	if err != nil {
+		errMsg := fmt.Sprintf("could not trim the video interval from %s to %s: %v", startCut, endCut, err)
 		wruntime.LogError(a.ctx, errMsg)
 		return fmt.Errorf(errMsg)
 	}
+
+	wruntime.LogInfo(a.ctx, fmt.Sprintf("video %s: [%s - %s] processed", name, startCut, endCut))
 	return nil
 }
 
