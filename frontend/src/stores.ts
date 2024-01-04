@@ -145,7 +145,7 @@ function createVideoStore() {
     setVol(val);
   }
 
-  function reset() {
+  function resetVideo() {
     setDur(0);
     setCurT(0.0);
     setVol(0.5);
@@ -162,7 +162,34 @@ function createVideoStore() {
     getCurrentTime,
     getVolume,
     setVolume,
-    reset,
+    resetVideo,
+  };
+}
+
+function createVideoToolingStore() {
+  const editMode = writable<string>("select");
+  const isCutting = writable<boolean>(false);
+  const cutStart = writable<number>(0.0);
+  const cutEnd = writable<number>(0.0);
+
+  const { set: setCutting } = isCutting;
+  const { set: setCutStart } = cutStart;
+  const { set: setCutEnd } = cutEnd;
+  const { set: setEditMode } = editMode;
+
+  function resetTooling() {
+    setCutting(false);
+    setCutStart(0.0);
+    setCutEnd(0.0);
+    setEditMode("timeline");
+  }
+
+  return {
+    editMode,
+    isCutting,
+    cutStart,
+    cutEnd,
+    resetTooling,
   };
 }
 
@@ -174,4 +201,4 @@ export const currentVideo = writable("");
 export const selectedTrack = writable("");
 export const draggedVideo = createVideoTransferStore();
 export const videoStore = createVideoStore();
-export const currenTime = writable(0.0);
+export const toolingStore = createVideoToolingStore();

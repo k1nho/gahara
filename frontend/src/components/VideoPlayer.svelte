@@ -8,7 +8,7 @@
   import SpeakerIcon from "../icons/SpeakerIcon.svelte";
   import MutedIcon from "../icons/MutedIcon.svelte";
   import { onMount } from "svelte";
-  import { videoStore, selectedTrack } from "../stores";
+  import { videoStore, selectedTrack, toolingStore } from "../stores";
 
   let playbackRate: number;
   let volume: number;
@@ -26,6 +26,7 @@
   let progress: HTMLProgressElement;
 
   let { duration, currentTime, paused, ended } = videoStore;
+  let { editMode, cutStart, cutEnd } = toolingStore;
 
   function setVideoPlayerDefaults() {
     volume = 0.5;
@@ -47,6 +48,13 @@
     if (videoSrc !== $selectedTrack) {
       videoSrc = $selectedTrack;
       setVideoPlayerDefaults();
+    }
+  }
+  $: {
+    if ($editMode === "cut") {
+      if ($currentTime >= $cutEnd) {
+        video.pause();
+      }
     }
   }
 
@@ -81,6 +89,10 @@
   }
 
   function handlePlayPause() {
+    if ($editMode === "cut") {
+      currentTime.set($cutStart);
+    }
+
     if ($paused || $ended) {
       video.play();
     } else {
